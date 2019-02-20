@@ -1,4 +1,4 @@
-package com.exactpro;
+package com.exactpro.test;
 
 public class Main {
 
