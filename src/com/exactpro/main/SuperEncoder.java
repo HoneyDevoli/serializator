@@ -1,4 +1,4 @@
-package com.exactpro;
+package com.exactpro.main;
 
 public interface SuperEncoder {
     byte[] serialize(Object anyBean);
