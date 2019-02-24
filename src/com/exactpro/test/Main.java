@@ -17,7 +17,7 @@ public class Main {
         bean.setInstant(Instant.now());
 
         Set<Integer> set = new HashSet<>();
-        set.add(5);
+        set.add(6);
         bean.setSomeSet(set);
 
         Map<SomeBean,SomeBean> map = new HashMap<>();
@@ -37,7 +37,7 @@ public class Main {
         bean.setSomeList(list);
 
         Serializator s = new Serializator();
-//        s.serialize(bean);
+        s.serialize(bean);
 //
 //        s.deserialize(null);
 

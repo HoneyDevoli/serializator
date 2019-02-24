@@ -119,12 +119,15 @@ public class Serializator implements SuperEncoder {
                 innerNode.setTextContent(valueOfField.toString());
             } else if(valueOfField instanceof Collection){
                 for (Object element : (Collection)valueOfField) {
-                    innerNode.appendChild(getNodeFromElement(element));
+                    innerNode.appendChild(getNodeFromElementCollection(element));
                 }
             } else if(valueOfField instanceof Map){
-                    Map.Entry entry = (Map.Entry)valueOfField;
+                Map map= (Map)valueOfField;
+                for (Object elementEntry : map.entrySet()) {
+                    Map.Entry entry = (Map.Entry)elementEntry;
 
-                    innerNode.appendChild(getNodeFromMap(entry));
+                    innerNode.appendChild(getNodeFromElementMap(entry));
+                }
             } else {
                 innerNode.appendChild(iterateNodes(valueOfField));
             }
@@ -134,24 +137,26 @@ public class Serializator implements SuperEncoder {
 
     }
 
-    private Element getNodeFromElement(Object element) throws IllegalAccessException {
+    private Element getNodeFromElementCollection(Object element) throws IllegalAccessException {
 
         Class classObject = element.getClass();
         String nameOfField= classObject.getName();
         Element node = document.createElement(nameOfField);
-
         if(element == null){
             node.setTextContent("null");
         } else if(element instanceof Number || element instanceof String || element instanceof Instant) {
             node.setTextContent(element.toString());
         } else if(element instanceof Collection){
             for (Object o : (Collection)element) {
-                node.appendChild(getNodeFromElement(o));
+                node.appendChild(getNodeFromElementCollection(o));
             }
         } else if(element instanceof Map){
-            Map.Entry entry = (Map.Entry)element;
+            Map map= (Map)element;
+            for (Object elementEntry : map.entrySet()) {
+                Map.Entry entry = (Map.Entry)elementEntry;
 
-            node.appendChild(getNodeFromMap(entry));
+                node.appendChild(getNodeFromElementMap(entry));
+            }
         } else {
             return iterateNodes(element);
         }
@@ -159,17 +164,12 @@ public class Serializator implements SuperEncoder {
         return node;
     }
 
-    private Element getNodeFromMap(Map.Entry collections) throws IllegalAccessException {
-            Element entryNode = document.createElement("Entry");
+    private Element getNodeFromElementMap(Map.Entry entry) throws IllegalAccessException {
+        Element entryNode = document.createElement("Entry");
 
-            Map.Entry entry = collections;
-            Collection keys = (Collection)entry.getKey();
-            Collection values = (Collection)entry.getValue();
-
-            entryNode.appendChild(getNodeFromElement(keys));
-            entryNode.appendChild(getNodeFromElement(values));
-
-            return entryNode;
+        entryNode.appendChild(getNodeFromElementCollection(entry.getKey()));
+        entryNode.appendChild(getNodeFromElementCollection(entry.getValue()));
+        return entryNode;
         }
 
 
@@ -196,9 +196,10 @@ public class Serializator implements SuperEncoder {
                         return true;
                     }
                 } else if(valueOfField instanceof Map) {
-                    Map.Entry entry = (Map.Entry)valueOfField;
-                    Collection keys = (Collection)entry.getKey();
-                    Collection values = (Collection)entry.getValue();
+                    System.out.println("\n");
+                    Map map = (Map)valueOfField;
+                    Collection keys = map.keySet();
+                    Collection values = map.values();
 
                     if(iterateCollection(keys) || iterateCollection(values)) {
                         return true;
@@ -224,6 +225,7 @@ public class Serializator implements SuperEncoder {
     }
 
     private boolean iterateCollection(Collection collection) throws IllegalAccessException {
+        System.out.println("\n new obj");
         for (Object element : collection) {
             if (!isSDKClass(element)) {
                 if (callStack.indexOf(element) >= 0) {
