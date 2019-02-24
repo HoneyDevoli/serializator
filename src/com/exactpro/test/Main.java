@@ -15,6 +15,7 @@ public class Main {
         bean.setSomeInt(50);
         bean.setSomeString("hui");
         bean.setInstant(Instant.now());
+        bean.setSomeInteger(new Integer("3232"));
 
         Set<Integer> set = new HashSet<>();
         set.add(6);
@@ -37,14 +38,14 @@ public class Main {
         bean.setSomeList(list);
 
         Serializator s = new Serializator();
-        s.serialize(bean);
+//        s.serialize(bean);
 //
-//        s.deserialize(null);
-
-        try {
-            System.out.println(s.isCircularObject(bean));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        Object obj = s.deserialize(null);
+        s.serialize(obj);
+//        try {
+//            System.out.println(s.isCircularObject(bean));
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
     }
 }

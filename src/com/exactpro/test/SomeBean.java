@@ -9,6 +9,7 @@ public class SomeBean implements Serializable {
 
     private String someString;
     private int someInt;
+    private Integer someInteger;
     private BigDecimal someDecimal;
     private ArrayList<SomeBean> someList;
     private Map<SomeBean,SomeBean> someMap;
@@ -82,5 +83,13 @@ public class SomeBean implements Serializable {
 
     public void setSomeSet(Set<Integer> someSet) {
         this.someSet = someSet;
+    }
+
+    public Integer getSomeInteger() {
+        return someInteger;
+    }
+
+    public void setSomeInteger(Integer someInteger) {
+        this.someInteger = someInteger;
     }
 }

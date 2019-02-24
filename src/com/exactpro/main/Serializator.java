@@ -1,7 +1,6 @@
 package com.exactpro.main;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -11,7 +10,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.logging.Level;
@@ -33,6 +37,8 @@ public class Serializator implements SuperEncoder {
 
             writeDocument(document);
 
+
+
         } catch (ParserConfigurationException e) {
             logger.log(Level.WARNING,e.getMessage());
         } catch (IllegalAccessException e) {
@@ -44,20 +50,41 @@ public class Serializator implements SuperEncoder {
 
     @Override
     public Object deserialize(byte[] data) {
-        Document document = getReadedDocument("./log/hui.xml");
-        System.out.println("hui");
-//        System.out.println(document.getDocumentElement().getTagName());
+        Document document = getReadedDocument("./log/hui2.xml");
+        Object newObject = null;
         var classname = document.getDocumentElement().getTagName();
-        var Element = document.getDocumentElement().hasChildNodes();
-        try {
-            Class<?> parseClass = Class.forName(classname);
-            for (var field: parseClass.getDeclaredFields()) {
-                System.out.println(field.getName());
 
-            }
-            return parseClass;
+//        if (document.hasChildNodes()) {
+//            printNote(document.getDocumentElement().getChildNodes());
+//        }
+        try {
+//            System.out.println(classname);
+//            Class<?> parseClass = Class.forName(classname);
+//            newObject = parseClass.getConstructor().newInstance();
+//            for (var field: newObject.getClass().getDeclaredFields()) {
+//
+//                System.out.println(field.getName());
+//                field.setAccessible(true);
+//                var value = field.get(newObject);
+//
+//                field.set(newObject,"5");
+//            }
+
+            var chiledNodes = document.getDocumentElement().getChildNodes();
+            return  deserializeNodeList(chiledNodes,classname);
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (Exception e){
+            return newObject;
         }
 //        for (int i = 0 ;i<document.getDocumentElement().getChildNodes().getLength(); i++) {
 //
@@ -71,7 +98,7 @@ public class Serializator implements SuperEncoder {
             TransformerFactory factory = TransformerFactory.newInstance();
             Transformer transformer = factory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT,"yes");
-            Result result = new StreamResult(new File("./log/hui.xml"));
+            Result result = new StreamResult(new File("./log/hui1.xml"));
             Source source = new DOMSource(document);
             transformer.transform(source, result);
         } catch (TransformerConfigurationException e) {
@@ -184,7 +211,6 @@ public class Serializator implements SuperEncoder {
             field.setAccessible(true);
 
             Object valueOfField = field.get(node);
-            System.out.println(field.getName());
 
             if(!isSDKClass(valueOfField)){
                 if(callStack.indexOf(valueOfField)>=0){
@@ -196,7 +222,6 @@ public class Serializator implements SuperEncoder {
                         return true;
                     }
                 } else if(valueOfField instanceof Map) {
-                    System.out.println("\n");
                     Map map = (Map)valueOfField;
                     Collection keys = map.keySet();
                     Collection values = map.values();
@@ -225,7 +250,6 @@ public class Serializator implements SuperEncoder {
     }
 
     private boolean iterateCollection(Collection collection) throws IllegalAccessException {
-        System.out.println("\n new obj");
         for (Object element : collection) {
             if (!isSDKClass(element)) {
                 if (callStack.indexOf(element) >= 0) {
@@ -239,5 +263,95 @@ public class Serializator implements SuperEncoder {
         }
         return false;
     }
+
+    private static void printNote(NodeList nodeList) {
+
+        for (int count = 0; count < nodeList.getLength(); count++) {
+
+            Node tempNode = nodeList.item(count);
+
+            // make sure it's element node.
+            if (tempNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                // get node name and value
+                System.out.println("\nNode Name =" + tempNode.getNodeName() + " [OPEN]");
+//                System.out.println("Node Value =" + tempNode.getTextContent());
+
+                if (tempNode.hasChildNodes()) {
+
+                    // loop again if has child nodes
+//                    printNote(tempNode.getChildNodes());
+
+                }
+
+                System.out.println("Node Name =" + tempNode.getNodeName() + " [CLOSE]");
+
+            }
+
+        }
+
+    }
+
+    private static Object deserializeNodeList(NodeList nodeList, String className ) throws NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, InstantiationException, ClassNotFoundException, NoSuchFieldException, ParseException {
+
+        Class<?> parseClass = Class.forName(className);
+        var newObject = parseClass.getConstructor().newInstance();
+
+        for (int i = 0 ;i<nodeList.getLength(); i++) {
+            Node item = nodeList.item(i);
+
+            if (item.getNodeType() == Node.ELEMENT_NODE) {
+                var elem = item.getNodeName();
+                var value = item.getTextContent();
+
+                    Field field = newObject.getClass().getDeclaredField(elem);
+                    field.setAccessible(true);
+
+                    System.out.println(item.getNodeName());
+                    if(value.equals("null")) {
+                        System.out.println("null");
+                    }
+                     else if(Number.class.isAssignableFrom(field.getType()) ||
+                            String.class.isAssignableFrom(field.getType())) {
+                        Object number = Class.forName(field.getType().getName()).getConstructor(new Class[]{String.class}).newInstance(value);
+
+                        field.set(newObject, number);
+                    } else if (field.getType().isPrimitive()) {
+                        field.setInt(newObject, Integer.parseInt(value));
+                    } else if(Instant.class.isAssignableFrom(field.getType())){
+                        Instant time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(value).toInstant();
+
+                        field.set(newObject, time);
+                    } else if(List.class.isAssignableFrom(field.getType())){
+
+                             List list = new ArrayList();
+                             list.add(new Object());
+//                             if(item.hasChildNodes()){
+                            field.set(newObject, list);
+                        System.out.println("hui1");
+                    } else if (Map.class.isAssignableFrom(field.getType())){
+                        System.out.println("hui2");
+                    } else if (Set.class.isAssignableFrom(field.getType())){
+                        System.out.println("hui3");
+                    } else {
+                        for (int j = 0; j < item.getChildNodes().getLength(); j++) {
+                            if (item.getChildNodes().item(j).getNodeType() == Node.ELEMENT_NODE) {
+                                Node childClass = item.getChildNodes().item(j);
+                                String childClassName = childClass.getNodeName();
+                                System.out.println(childClassName);
+                                field.set(newObject, deserializeNodeList(childClass.getChildNodes(),childClassName));
+                            }
+                        }
+                    }
+                }
+
+
+
+        }
+        return newObject;
+    }
 }
+
+
 
