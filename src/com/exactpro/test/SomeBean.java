@@ -9,16 +9,18 @@ public class SomeBean implements Serializable {
 
     private String someString;
     private int someInt;
+    private float someFloat;
+    private boolean aBoolean;
     private Integer someInteger;
     private BigDecimal someDecimal;
-    private ArrayList<SomeBean> someList;
+    private LinkedList<SomeBean> someList;
     private Map<SomeBean,SomeBean> someMap;
     private Set<Integer> someSet;
     private SomeBean someBean;
     private Instant instant;
 
     public SomeBean(){
-            Map kek = (Map)someMap;
+
     }
 
     public String getSomeString() {
@@ -49,7 +51,7 @@ public class SomeBean implements Serializable {
         return someList;
     }
 
-    public void setSomeList(ArrayList<SomeBean> someList) {
+    public void setSomeList(LinkedList<SomeBean> someList) {
         this.someList = someList;
     }
 
@@ -91,5 +93,13 @@ public class SomeBean implements Serializable {
 
     public void setSomeInteger(Integer someInteger) {
         this.someInteger = someInteger;
+    }
+
+    public float getSomeFloat() {
+        return someFloat;
+    }
+
+    public void setSomeFloat(float someFloat) {
+        this.someFloat = someFloat;
     }
 }
