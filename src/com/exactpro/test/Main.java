@@ -42,7 +42,7 @@ public class Main {
         bean.setSomeBean(innerBean);
 
         ArrayList<SomeBean> list = new ArrayList<>();
-        //list.add(innerBean);
+        list.add(innerBean);
 
         bean.setSomeList(new LinkedList<>(list));
 
