@@ -84,57 +84,6 @@ public class Serializator implements SuperEncoder {
         return null;
     }
 
-    public static void saveDocument(Document document, String path) {
-        try {
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT,"yes");
-            Result result = new StreamResult(new File(path));
-
-            Source source = new DOMSource(document);
-            transformer.transform(source, result);
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static byte[] documentToByte(Document document) throws TransformerException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        StreamResult result = new StreamResult(bos);
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-        DOMSource source = new DOMSource(document);
-        transformer.transform(source, result);
-        byte[] data = bos.toByteArray();
-
-        return data;
-    }
-
-    public static Document byteToDocument(byte[] data) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder= factory.newDocumentBuilder();
-
-        return builder.parse(new ByteArrayInputStream(data));
-    }
-
-    public static Document getDocumentByPath(String filePath){
-        try {
-            File xmlFile = new File(filePath);
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document document = dbf.newDocumentBuilder().parse(xmlFile);
-            return document;
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        return  null;
-    }
 
     private Element iterateNodes(Object bean) throws IllegalAccessException {
         Class classObject = bean.getClass();
@@ -152,14 +101,18 @@ public class Serializator implements SuperEncoder {
 
             if(valueOfField == null){
                 innerNode.setTextContent("null");
+
             } else if( typeOfField.isPrimitive() ){
                 innerNode.setTextContent(valueOfField.toString());
+
             } else if(valueOfField instanceof Number || valueOfField instanceof String || valueOfField instanceof Instant) {
                 innerNode.setTextContent(valueOfField.toString());
+
             } else if(valueOfField instanceof Collection){
                 for (Object element : (Collection)valueOfField) {
                     innerNode.appendChild(getNodeFromElementCollection(element));
                 }
+
             } else if(valueOfField instanceof Map){
                 Map map= (Map)valueOfField;
                 for (Object elementEntry : map.entrySet()) {
@@ -167,6 +120,7 @@ public class Serializator implements SuperEncoder {
 
                     innerNode.appendChild(getNodeFromElementMap(entry));
                 }
+
             } else {
                 innerNode.appendChild(iterateNodes(valueOfField));
             }
@@ -183,12 +137,15 @@ public class Serializator implements SuperEncoder {
         Element node = document.createElement(nameOfField);
         if(element == null){
             node.setTextContent("null");
+
         } else if(element instanceof Number || element instanceof String || element instanceof Instant) {
             node.setTextContent(element.toString());
+
         } else if(element instanceof Collection){
             for (Object o : (Collection)element) {
                 node.appendChild(getNodeFromElementCollection(o));
             }
+
         } else if(element instanceof Map){
             Map map= (Map)element;
             for (Object elementEntry : map.entrySet()) {
@@ -196,6 +153,7 @@ public class Serializator implements SuperEncoder {
 
                 node.appendChild(getNodeFromElementMap(entry));
             }
+
         } else {
             return iterateNodes(element);
         }
@@ -408,7 +366,7 @@ public class Serializator implements SuperEncoder {
                 String childClassName = childItem.getNodeName();
 
                 if(Number.class.isAssignableFrom(Class.forName(childClassName)) ||
-                        String.class.isAssignableFrom(Class.forName(childClassName))){
+                    String.class.isAssignableFrom(Class.forName(childClassName))){
 
                     Object baseType = Class.forName(childClassName).getConstructor(new Class[]{String.class}).newInstance(childItem.getTextContent());
                     list.add(baseType);
@@ -418,6 +376,58 @@ public class Serializator implements SuperEncoder {
             }
         }
         return list;
+    }
+
+    public static void saveDocument(Document document, String path) {
+        try {
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT,"yes");
+            Result result = new StreamResult(new File(path));
+
+            Source source = new DOMSource(document);
+            transformer.transform(source, result);
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static byte[] documentToByte(Document document) throws TransformerException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        StreamResult result = new StreamResult(bos);
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        DOMSource source = new DOMSource(document);
+        transformer.transform(source, result);
+        byte[] data = bos.toByteArray();
+
+        return data;
+    }
+
+    public static Document byteToDocument(byte[] data) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder= factory.newDocumentBuilder();
+
+        return builder.parse(new ByteArrayInputStream(data));
+    }
+
+    public static Document getDocumentByPath(String filePath){
+        try {
+            File xmlFile = new File(filePath);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            Document document = dbf.newDocumentBuilder().parse(xmlFile);
+            return document;
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        return  null;
     }
 
     private enum FieldType {

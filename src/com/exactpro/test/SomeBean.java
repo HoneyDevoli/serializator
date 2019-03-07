@@ -8,7 +8,6 @@ import java.util.*;
 public class SomeBean implements Serializable {
 
     private String someString;
-    private int someInt;
     private float someFloat;
     private boolean aBoolean;
     private Integer someInteger;
@@ -17,6 +16,7 @@ public class SomeBean implements Serializable {
     private Map<SomeBean,SomeBean> someMap;
     private Set<Integer> someSet;
     private SomeBean someBean;
+    private int someInt;
     private Instant instant;
 
     public SomeBean(){

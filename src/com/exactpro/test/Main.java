@@ -1,5 +1,6 @@
 package com.exactpro.test;
 
+import com.exactpro.main.ByteSerializer;
 import com.exactpro.main.ReferenceCycleException;
 import com.exactpro.main.Serializator;
 import org.w3c.dom.Document;
@@ -7,7 +8,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
@@ -19,7 +20,7 @@ public class Main {
     public static void main(String[] args) {
 
         SomeBean bean = new SomeBean();
-        bean.setSomeDecimal(new BigDecimal(42d));
+        bean.setSomeDecimal(new BigDecimal(4233333333333333d));
         bean.setSomeInt(50);
         bean.setSomeString("string");
         bean.setInstant(Instant.now());
@@ -29,10 +30,7 @@ public class Main {
         set.add(6);
         bean.setSomeSet(set);
 
-        Map<SomeBean,SomeBean> map = new HashMap<>();
-        map.put(new SomeBean(),new SomeBean());
-        map.put(new SomeBean(),new SomeBean());
-        bean.setSomeMap(map);
+
 
         SomeBean innerBean = new SomeBean();
         innerBean.setSomeDecimal(new BigDecimal(42));
@@ -43,6 +41,11 @@ public class Main {
 
         ArrayList<SomeBean> list = new ArrayList<>();
         list.add(innerBean);
+
+        Map<SomeBean,SomeBean> map = new HashMap<>();
+        map.put(innerBean,new SomeBean());
+        map.put(new SomeBean(),new SomeBean());
+        bean.setSomeMap(map);
 
         bean.setSomeList(new LinkedList<>(list));
 
@@ -69,6 +72,24 @@ public class Main {
         }
 
 
+        try {
+
+            ByteSerializer bs = new ByteSerializer();
+            var bytes = bs.serialize(bean);
+
+            Serializator.saveDocument(byteToDocument(s.serialize(bs.deserialize(bytes))),"./log/ht.txt");
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ReferenceCycleException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
 
     }
 }
