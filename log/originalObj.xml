@@ -37,34 +37,6 @@
     <someMap>
         <Entry>
             <com.exactpro.test.SomeBean>
-                <someString>null</someString>
-                <someFloat>0.0</someFloat>
-                <aBoolean>false</aBoolean>
-                <someInteger>null</someInteger>
-                <someDecimal>null</someDecimal>
-                <someList>null</someList>
-                <someMap>null</someMap>
-                <someSet>null</someSet>
-                <someBean>null</someBean>
-                <someInt>0</someInt>
-                <instant>null</instant>
-            </com.exactpro.test.SomeBean>
-            <com.exactpro.test.SomeBean>
-                <someString>null</someString>
-                <someFloat>0.0</someFloat>
-                <aBoolean>false</aBoolean>
-                <someInteger>null</someInteger>
-                <someDecimal>null</someDecimal>
-                <someList>null</someList>
-                <someMap>null</someMap>
-                <someSet>null</someSet>
-                <someBean>null</someBean>
-                <someInt>0</someInt>
-                <instant>null</instant>
-            </com.exactpro.test.SomeBean>
-        </Entry>
-        <Entry>
-            <com.exactpro.test.SomeBean>
                 <someString>string</someString>
                 <someFloat>0.0</someFloat>
                 <aBoolean>false</aBoolean>
@@ -89,6 +61,34 @@
                     </com.exactpro.test.SomeBean>
                 </someBean>
                 <someInt>60</someInt>
+                <instant>null</instant>
+            </com.exactpro.test.SomeBean>
+            <com.exactpro.test.SomeBean>
+                <someString>null</someString>
+                <someFloat>0.0</someFloat>
+                <aBoolean>false</aBoolean>
+                <someInteger>null</someInteger>
+                <someDecimal>null</someDecimal>
+                <someList>null</someList>
+                <someMap>null</someMap>
+                <someSet>null</someSet>
+                <someBean>null</someBean>
+                <someInt>0</someInt>
+                <instant>null</instant>
+            </com.exactpro.test.SomeBean>
+        </Entry>
+        <Entry>
+            <com.exactpro.test.SomeBean>
+                <someString>null</someString>
+                <someFloat>0.0</someFloat>
+                <aBoolean>false</aBoolean>
+                <someInteger>null</someInteger>
+                <someDecimal>null</someDecimal>
+                <someList>null</someList>
+                <someMap>null</someMap>
+                <someSet>null</someSet>
+                <someBean>null</someBean>
+                <someInt>0</someInt>
                 <instant>null</instant>
             </com.exactpro.test.SomeBean>
             <com.exactpro.test.SomeBean>
@@ -139,5 +139,5 @@
         </com.exactpro.test.SomeBean>
     </someBean>
     <someInt>50</someInt>
-    <instant>2019-03-08T07:46:14.151865Z</instant>
+    <instant>2019-03-08T08:03:10.203125Z</instant>
 </com.exactpro.test.SomeBean>

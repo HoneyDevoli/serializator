@@ -66,7 +66,7 @@ public class ByteSerializer implements SuperEncoder {
             DataInputStream inputStream = new DataInputStream(byteInStream);
 
             lvl = 0;
-            return deserializeStream(inputStream);
+            return deserializeBean(inputStream);
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -170,7 +170,7 @@ public class ByteSerializer implements SuperEncoder {
         return false;
     }
 
-    private Object deserializeStream(DataInputStream inputStream) throws NoSuchMethodException, IllegalAccessException,
+    private Object deserializeBean(DataInputStream inputStream) throws NoSuchMethodException, IllegalAccessException,
             InvocationTargetException, InstantiationException, ClassNotFoundException, NoSuchFieldException, ParseException, IOException {
 
         String className = readString(inputStream);
@@ -277,7 +277,7 @@ public class ByteSerializer implements SuperEncoder {
                                     inputStream.reset();
                                     coll.add(wrapperDeserialize(inputStream));
                                 } else {
-                                    coll.add(deserializeStream(inputStream));
+                                    coll.add(deserializeBean(inputStream));
                                 }
 
                                 field.set(newObject, coll);
@@ -292,7 +292,7 @@ public class ByteSerializer implements SuperEncoder {
                             for (int i = 0; i < size; i++) {
                                 byte type = inputStream.readByte();
                                 if (type == BEAN_TYPE) {
-                                    obj[i] = deserializeStream(inputStream);
+                                    obj[i] = deserializeBean(inputStream);
                                 } else {
                                     inputStream.reset();
                                     obj[i] = wrapperDeserialize(inputStream);
@@ -305,11 +305,10 @@ public class ByteSerializer implements SuperEncoder {
                             break;
 
                         case BEAN_TYPE:
-                            field.set(newObject, deserializeStream(inputStream));
+                            field.set(newObject, deserializeBean(inputStream));
                             break;
 
                         default:
-                            System.out.println("hui");
                             break;
                     }
                 }
@@ -352,8 +351,6 @@ public class ByteSerializer implements SuperEncoder {
 
         return map;
     }
-
-
 
 
     private void serialize (DataOutput dos, Object obj) throws IOException, IllegalAccessException {
