@@ -1,4 +1,4 @@
-package com.exactpro.main.Interface;
+package com.exactpro.main.abstraction;
 
 import com.exactpro.main.exception.ReferenceCycleException;
 

@@ -1,4 +1,4 @@
-package com.exactpro.main;
+package com.exactpro.main.exception;
 
 public class ReferenceCycleException extends Exception {
 

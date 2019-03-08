@@ -1,7 +1,7 @@
 package com.exactpro.main;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import com.exactpro.main.exception.ReferenceCycleException;
+import com.exactpro.main.abstraction.SuperEncoder;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -40,9 +40,8 @@ public class ByteSerializer implements SuperEncoder {
 
     @Override
     public byte[] serialize(Object anyBean) throws ReferenceCycleException {
-
         try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-             DataOutputStream outputStream = new DataOutputStream(byteStream);
+             DataOutputStream outputStream = new DataOutputStream(byteStream)
         ) {
             if (isCircularObject(anyBean)) {
                 throw new ReferenceCycleException("This bean have a circular field " + anyBean.getClass());
@@ -64,7 +63,6 @@ public class ByteSerializer implements SuperEncoder {
     public Object deserialize(byte[] data) {
         try {
             ByteArrayInputStream byteInStream = new ByteArrayInputStream(data);
-
             DataInputStream inputStream = new DataInputStream(byteInStream);
 
             lvl = 0;
@@ -184,25 +182,25 @@ public class ByteSerializer implements SuperEncoder {
 
         lvl++;
 
-        while (inputStream.available() > 12) {
+        while (inputStream.available() > 0) {
 
             inputStream.mark(1);
             byte readlvl = inputStream.readByte();
 
             if (lvl == readlvl) {
 
-                String elem = readString(inputStream);
-                Field field = newObject.getClass().getDeclaredField(elem);
+                String fieldName = readString(inputStream);
+                Field field = newObject.getClass().getDeclaredField(fieldName);
                 field.setAccessible(true);
                 Class<?> typeOfField = field.getType();
 
                 if (Number.class.isAssignableFrom(typeOfField)) {
                     Object value = wrapperDeserialize(inputStream);
-
                     if (value != null) {
                         Object number = Class.forName(typeOfField.getName()).getConstructor(new Class[]{String.class}).newInstance(value.toString());
                         field.set(newObject, number);
                     }
+
                 } else {
                     byte typeByte = inputStream.readByte();
                     switch (typeByte) {
@@ -325,8 +323,8 @@ public class ByteSerializer implements SuperEncoder {
     }
 
     private Collection getActualCollection (Class < ? > typeOfField) throws
-    ClassNotFoundException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException, InstantiationException {
+        ClassNotFoundException, NoSuchMethodException,
+        IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Collection list;
         if (typeOfField.isInterface()) {
@@ -343,7 +341,7 @@ public class ByteSerializer implements SuperEncoder {
     }
 
     private Map getActualMap (Class < ? > typeOfField) throws ClassNotFoundException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException, InstantiationException {
+        IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Map map;
         if (typeOfField.isInterface()) {
@@ -431,47 +429,42 @@ public class ByteSerializer implements SuperEncoder {
         }
 
     public Object wrapperDeserialize(DataInputStream inputStream) throws IOException {
-        try {
-            byte typeByte = inputStream.readByte();
-            switch (typeByte) {
-                case STRING_TYPE:
-                    int strByteSize = inputStream.readInt();
-                    byte[] strBytes = new byte[strByteSize];
-                    inputStream.readFully(strBytes, 0, strByteSize);
-                    return new String(strBytes, UTF_8);
 
-                case INTEGER_TYPE:
-                    return inputStream.readInt();
+        byte typeByte = inputStream.readByte();
+        switch (typeByte) {
+            case STRING_TYPE:
+                return readString(inputStream);
 
-                case LONG_TYPE:
-                    return inputStream.readLong();
+            case INTEGER_TYPE:
+                return inputStream.readInt();
 
-                case BIG_INTEGER_TYPE:
-                    int byteSize = inputStream.readInt();
-                    byte[] bytes = new byte[byteSize];
-                    inputStream.readFully(bytes, 0, byteSize);
-                    return new BigInteger(bytes);
+            case LONG_TYPE:
+                return inputStream.readLong();
 
-                case FLOAT_TYPE:
-                    return inputStream.readFloat();
+            case BIG_INTEGER_TYPE:
+                int byteSize = inputStream.readInt();
+                byte[] bytes = new byte[byteSize];
+                inputStream.readFully(bytes, 0, byteSize);
+                return new BigInteger(bytes);
 
-                case DOUBLE_TYPE:
-                    return inputStream.readDouble();
+            case FLOAT_TYPE:
+                return inputStream.readFloat();
 
-                case BOOLEAN_TYPE:
-                    return inputStream.readBoolean();
+            case DOUBLE_TYPE:
+                return inputStream.readDouble();
 
-                case BIGDECIMAL_TYPE:
-                    BigDecimal decimal = new BigDecimal(readString(inputStream));
-                    return decimal;
-                case NULL_TYPE:
-                    return null;
+            case BOOLEAN_TYPE:
+                return inputStream.readBoolean();
 
-                default:
-                    throw new IOException("Cannot wrapperDeserialize " + typeByte);
-            }
-        } catch (EOFException e) {
-            return null;
+            case BIGDECIMAL_TYPE:
+                BigDecimal decimal = new BigDecimal(readString(inputStream));
+                return decimal;
+
+            case NULL_TYPE:
+                return null;
+
+            default:
+                throw new IOException("Cannot wrapperDeserialize " + typeByte);
         }
     }
 
@@ -491,4 +484,4 @@ public class ByteSerializer implements SuperEncoder {
 
         return new String(strBytes, UTF_8);
     }
-    }
+}

@@ -1,5 +1,8 @@
 package com.exactpro.main;
 
+import com.exactpro.main.exception.ReferenceCycleException;
+import com.exactpro.main.abstraction.SuperEncoder;
+import com.exactpro.main.util.Converter;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -17,7 +20,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
-public class Serializator implements SuperEncoder {
+public class XMLSerializer implements SuperEncoder {
     private Document document;
     private LinkedList<Object> callStack = new LinkedList<>();
 
@@ -36,7 +39,7 @@ public class Serializator implements SuperEncoder {
             document = dbf.newDocumentBuilder().newDocument();
             document.appendChild(iterateNodes(anyBean));
 
-            return documentToByte(document);
+            return Converter.documentToByte(document);
 
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -52,9 +55,8 @@ public class Serializator implements SuperEncoder {
     @Override
     public Object deserialize(byte[] data) {
 
-
         try {
-            Document document = byteToDocument(data);
+            Document document = Converter.byteToDocument(data);
             String classname = document.getDocumentElement().getTagName();
             NodeList chiledNodes = document.getDocumentElement().getChildNodes();
 
@@ -376,58 +378,6 @@ public class Serializator implements SuperEncoder {
             }
         }
         return list;
-    }
-
-    public static void saveDocument(Document document, String path) {
-        try {
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT,"yes");
-            Result result = new StreamResult(new File(path));
-
-            Source source = new DOMSource(document);
-            transformer.transform(source, result);
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static byte[] documentToByte(Document document) throws TransformerException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        StreamResult result = new StreamResult(bos);
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-        DOMSource source = new DOMSource(document);
-        transformer.transform(source, result);
-        byte[] data = bos.toByteArray();
-
-        return data;
-    }
-
-    public static Document byteToDocument(byte[] data) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder= factory.newDocumentBuilder();
-
-        return builder.parse(new ByteArrayInputStream(data));
-    }
-
-    public static Document getDocumentByPath(String filePath){
-        try {
-            File xmlFile = new File(filePath);
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            Document document = dbf.newDocumentBuilder().parse(xmlFile);
-            return document;
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        return  null;
     }
 
     private enum FieldType {

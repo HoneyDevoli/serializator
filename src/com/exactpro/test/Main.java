@@ -1,19 +1,21 @@
 package com.exactpro.test;
 
 import com.exactpro.main.ByteSerializer;
-import com.exactpro.main.ReferenceCycleException;
-import com.exactpro.main.Serializator;
+import com.exactpro.main.XMLSerializer;
+import com.exactpro.main.exception.ReferenceCycleException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 
-import static com.exactpro.main.Serializator.*;
+import static com.exactpro.main.util.Converter.*;
+import static com.exactpro.main.util.FileSaver.*;
 
 public class Main {
 
@@ -29,8 +31,6 @@ public class Main {
         Set<Integer> set = new HashSet<>();
         set.add(6);
         bean.setSomeSet(set);
-
-
 
         SomeBean innerBean = new SomeBean();
         innerBean.setSomeDecimal(new BigDecimal(42));
@@ -49,15 +49,15 @@ public class Main {
 
         bean.setSomeList(new LinkedList<>(list));
 
-        Serializator s = new Serializator();
 
+        XMLSerializer xmlSer = new XMLSerializer();
         try {
-            saveDocument(byteToDocument(s.serialize(bean)),"./log/originalObj.xml");
+            saveDocument(byteToDocument(xmlSer.serialize(bean)),"./log/originalObj.xml");
 
             Document readedDoc = getDocumentByPath("./log/originalObj.xml") ;
-            Object deserializeObj = s.deserialize(documentToByte(readedDoc));
+            Object deserializeObj = xmlSer.deserialize(documentToByte(readedDoc));
 
-            saveDocument(byteToDocument(s.serialize(deserializeObj)),"./log/deserialObj.xml");
+            saveDocument(byteToDocument(xmlSer.serialize(deserializeObj)),"./log/deserialObj.xml");
         } catch (ReferenceCycleException e) {
             System.out.println("Find cycle referens. Error of serialisation");
             e.printStackTrace();
@@ -73,23 +73,22 @@ public class Main {
 
 
         try {
+            ByteSerializer byteSer = new ByteSerializer();
+            var bytes = byteSer.serialize(bean);
 
-            ByteSerializer bs = new ByteSerializer();
-            var bytes = bs.serialize(bean);
+            saveDocument(byteToDocument(xmlSer.serialize(byteSer.deserialize(bytes))),"./log/bytexml.xml");
 
-            Serializator.saveDocument(byteToDocument(s.serialize(bs.deserialize(bytes))),"./log/ht.txt");
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (ReferenceCycleException e) {
+            System.out.println("Find cycle referens. Error of serialisation");
             e.printStackTrace();
-        } catch (SAXException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
         }
-
     }
 }
